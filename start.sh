@@ -8,9 +8,9 @@ PASSWORD=${PASSWORD:-"password"}
 EXTRAS=${EXTRAS:-""}
 
 
-if [ ! -f ~/.ampdata/AMP_Linux_x86_64 ]; then
+if [ ! -f /ampdata/AMP_Linux_x86_64 ]; then
     echo "Creating $MODULE instance."
-    ./ampinstmgr CreateInstance $MODULE instance $HOST $PORT $LICENCE $PASSWORD +Core.Login.Username $USERNAME $EXTRAS
+    /home/AMP/ampinstmgr CreateInstance $MODULE instance $HOST $PORT $LICENCE $PASSWORD +Core.Login.Username $USERNAME $EXTRAS
     (cd /ampdata/ && exec ./AMP_Linux_x86_64)
 else
     (cd /ampdata/ && ./AMP_Linux_x86_64 +Core.AMP.LicenceKey $LICENCE && exec ./AMP_Linux_x86_64)
