@@ -51,9 +51,11 @@ RUN adduser -SD AMP \
  && addgroup AMP \
  && mkdir /ampdata \
  && chmod +x /start.sh \
+ && mkdir -p /home/AMP/.ampdata/instances \
+ && ln -s /ampdata /home/AMP/.ampdata/instances/instance \
  && chown AMP:AMP /start.sh \
- && chown AMP:AMP /ampdata \
- && ln -s /ampdata /home/AMP/.ampdata/ \
+ && chown -R AMP:AMP /ampdata \
+ && chown -R AMP:AMP /home/AMP
 
 USER AMP
 
