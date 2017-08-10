@@ -8,7 +8,7 @@ ARG TMUX_VER=2.4
 ARG PREFIX=/usr
 
 RUN apt-get update -qqy \
- && apt-get install -qqy dh-autoreconf libncurses5-dev libsqlite3-0 \
+ && apt-get install -qqy dh-autoreconf libncurses5-dev libsqlite3-0 libgcc1\
  && mkdir -p /output/bin /output/lib
 
 RUN curl -fL http://www.dest-unreach.org/socat/download/socat-${SOCAT_VER}.tar.gz | tar xz \
@@ -42,7 +42,8 @@ RUN curl -fL https://github.com/tmux/tmux/releases/download/${TMUX_VER}/tmux-${T
 # Yeah we should probably build these from source, but its part of the debian image.....
 RUN cp /lib/$(gcc -print-multiarch)/libgcc_s.so.1 /output/lib \
  && cp /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 /output/lib \
- && cp /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 /output/lib
+ && cp /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 /output/lib \
+ && cp /usr/lib/$(gcc -print-multiarch)/libgcc_s.so.1 /output/lib
 
 
 #================
@@ -53,7 +54,7 @@ FROM adamant/busybox:libressl
 ADD start.sh /
 
 COPY --from=builder /output/bin/* /usr/bin/
-COPY --from=builder /output/lib/* /usr/lib/
+COPY --from=builder /output/lib/* /lib/
 
 RUN addgroup -S amp \
  && adduser -SDG amp amp \
