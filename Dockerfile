@@ -60,7 +60,10 @@ RUN addgroup -S amp \
  && chmod +x /start.sh \
  && mkdir -p /home/amp/.ampdata/instances /ampdata \
  && ln -s /ampdata /home/amp/.ampdata/instances/instance \
- && chown -R amp:amp /start.sh /ampdata /home/amp
+ && chown -R amp:amp /start.sh /ampdata /home/amp \
+# Touch is needed cos its checking for sqlite, but doesn't use it. Fixed in next AMP update.
+ && touch /usr/bin/sqlite3
+
 
 USER amp
 
