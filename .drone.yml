@@ -1,0 +1,36 @@
+services:
+  docker:
+    image: docker:dind
+    privileged: true
+
+pipeline:
+  build:
+    image: docker
+    environment:
+       - DOCKER_HOST=tcp://docker:2375
+    commands:
+       - docker build -t devbuild . 
+
+  test:
+    image: docker
+    secrets: [ LICENCE ]
+    environment:
+       - DOCKER_HOST=tcp://docker:2375
+    commands:
+      - apk add --no-cache curl
+      - docker run --name=DEV -d -p 8080:8080 -e "EXTRAS=+MinecraftModule.Minecraft.PortNumber 25565 +MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE devbuild
+      - sleep 25  # Wait for AMP to install and start!
+      - docker logs DEV
+      - curl -sSL docker:8080
+      - docker kill DEV #Not really needed, but keeps things quick
+
+  publish:
+    image: docker
+    secrets: [ DOCKER_USER, DOCKER_PASS ]
+    environment:
+       - DOCKER_HOST=tcp://docker:2375
+    commands:
+       - docker tag devbuild adamant/amp
+       - docker login -u $DOCKER_USER -p $DOCKER_PASS
+       - docker push adamant/amp
+       - echo "CONGRATS! SUCCESSFULLY BUILT AMP BASE IMAGE!"
