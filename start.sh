@@ -14,7 +14,7 @@ EXTRAS=${EXTRAS:-""}
 if [ ! -f /ampdata/AMP_Linux_x86_64 ]; then
     echo "Creating $MODULE instance."
     /home/amp/ampinstmgr CreateInstance $MODULE instance $HOST $PORT $LICENCE $PASSWORD +Core.Login.Username $USERNAME $EXTRAS
-    (cd /ampdata/ && exec ./AMP_Linux_x86_64)
-else
-    (cd /ampdata/ && ./AMP_Linux_x86_64 +Core.AMP.LicenceKey $LICENCE && exec ./AMP_Linux_x86_64)
 fi
+    
+cd /ampdata/
+exec ./AMP_Linux_x86_64 +Core.AMP.LicenceKey $LICENCE
