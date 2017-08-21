@@ -19,9 +19,11 @@ pipeline:
     commands:
       - apk add --no-cache curl
       - docker run --name=DEV -d -p 8080:8080 -e "EXTRAS=+MinecraftModule.Minecraft.PortNumber 25565 +MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE devbuild
-      - sleep 25  # Wait for AMP to install and start!
-      - docker logs DEV
-      - curl -sSL docker:8080
+      # Wait for AMP to install and start!
+      - timeout -t 120 docker logs DEV &
+      - sleep 60
+      - curl -fL --max-time 2 --retry 6 --retry-delay 10 docker:8080
+      - pkill timeout || true
       - docker kill DEV #Not really needed, but keeps things quick
 
   publish:
