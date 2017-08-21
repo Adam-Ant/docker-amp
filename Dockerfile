@@ -1,9 +1,9 @@
 FROM frebib/debian-builder as builder
 
 ARG SOCAT_VER=1.7.3.2
-ARG SCREEN_VER=v.4.5.1
+ARG SCREEN_VER=v.4.6.1
 ARG LIBEVENT_VER=2.1.8-stable
-ARG TMUX_VER=2.4
+ARG TMUX_VER=2.5
 ARG GLIBC_VER=2.26
 
 ARG PREFIX=/usr
