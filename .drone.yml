@@ -25,7 +25,7 @@ pipeline:
       - curl -sSL --max-time 2 --retry 6 --retry-delay 10 docker:8080 > /dev/null
       - docker stop -t 30 DEV
       # Wait for it logging to exit
-      - wait $(pidof timeout)
+      - wait $(pidof timeout) || true
 
   publish:
     image: docker
