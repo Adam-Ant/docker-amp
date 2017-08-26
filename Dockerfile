@@ -96,33 +96,34 @@ RUN cp -d /usr/lib32/libgcc_s.so.1 /output${PREFIX}/lib32 \
 
 FROM adamant/busybox:libressl
 
-ADD start.sh /
-
 COPY --from=builder /output/ /
 
 RUN addgroup -S amp \
  && adduser -SDG amp amp \
- && chmod +x /start.sh \
  && mkdir -p /home/amp/.ampdata/instances /ampdata \
  && ln -s /ampdata /home/amp/.ampdata/instances/instance \
- && chown -R amp:amp /start.sh /ampdata /home/amp \
+ && chown -R amp:amp /ampdata /home/amp \
  && (echo '#!/bin/sh'; echo 'exec /bin/sh "$@"') > /usr/bin/bash \
  && chmod +x /usr/bin/bash \
  && echo /usr/lib32 > /etc/ld.so.conf \
  && ldconfig && ldconfig -p
 
-USER amp
-
-WORKDIR /home/amp
+WORKDIR /opt/amp
 
 RUN wget -q https://cubecoders.com/Downloads/ampinstmgr.zip \
  && unzip ampinstmgr.zip \
- && rm -rf ampinstmgr.zip
+ && rm -rf ampinstmgr.zip \
+ && ln -sfv /opt/amp/ampinstmgr /usr/bin
 
-VOLUME ["/ampdata"]
+ADD start.sh /start.sh
+RUN chmod +x /start.sh
+
+USER amp
+
+VOLUME  /ampdata
+WORKDIR /ampdata
 
 ENTRYPOINT ["/sbin/tini","--"]
-
 CMD ["/start.sh"]
 
 EXPOSE 8080
