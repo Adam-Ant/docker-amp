@@ -36,3 +36,14 @@ pipeline:
        - docker login -u $DOCKER_USER -p $DOCKER_PASS
        - docker push adamant/amp
        - echo "CONGRATS! SUCCESSFULLY BUILT AMP BASE IMAGE!"
+
+  downstream:
+    image: plugins/downstream
+    secrets: [ DOWNSTREAM_TOKEN ]
+    server: https://drone.adam-ant.co.uk
+    fork: true
+    repositories:
+      - Adam-Ant/docker-ark-amp
+    when:
+      event:  [ push, tag, deployment ]
+      status: [ success ]
