@@ -46,7 +46,6 @@ pipeline:
     server: https://drone.adam-ant.co.uk
     fork: true
     repositories:
-      - Adam-Ant/docker-ark-amp
       - Adam-Ant/docker-minecraft-amp
     when:
       event:  [ push, tag, deployment ]
