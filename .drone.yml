@@ -30,6 +30,8 @@ pipeline:
   publish:
     image: docker
     secrets: [ DOCKER_USER, DOCKER_PASS ]
+    when:
+      event: [push, tag, deployment]
     environment:
        - DOCKER_HOST=tcp://docker:2375
     commands:
@@ -45,6 +47,7 @@ pipeline:
     fork: true
     repositories:
       - Adam-Ant/docker-ark-amp
+      - Adam-Ant/docker-minecraft-amp
     when:
       event:  [ push, tag, deployment ]
       status: [ success ]
