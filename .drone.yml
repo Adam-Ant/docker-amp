@@ -1,43 +1,39 @@
-services:
-  docker:
-    image: docker:dind
-    privileged: true
-
 pipeline:
   build:
     image: docker
-    environment:
-       - DOCKER_HOST=tcp://docker:2375
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     commands:
-       - docker build -t devbuild . 
+       - docker build --pull --no-cache -t amp-base-dev . 
 
   test:
     image: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     secrets: [ LICENCE ]
-    environment:
-       - DOCKER_HOST=tcp://docker:2375
     commands:
       - apk add --no-cache curl
-      - docker run --name=DEV -d -p 8080:8080 -e "EXTRAS=+MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE devbuild
+      - CON_NAME=$(docker run -d --rm -p 8080:8080 -e "EXTRAS=+MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE amp-base-dev)
       # Wait for AMP to install and start!
-      - timeout -t 90 docker logs -f DEV &
+      - timeout -t 90 docker logs -f $$CON_NAME &
       - sleep 30
-      - curl -sSL --max-time 2 --retry 6 --retry-delay 10 docker:8080 > /dev/null
-      - docker stop -t 30 DEV
+      - curl -sSL --max-time 2 --retry 6 --retry-delay 10 $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME):8080 > /dev/null
+      - docker stop -t 30 $$CON_NAME
       # Wait for it logging to exit
       - wait $(pidof timeout) || true
 
   publish:
     image: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     secrets: [ DOCKER_USER, DOCKER_PASS ]
     when:
       event: [push, tag, deployment]
-    environment:
-       - DOCKER_HOST=tcp://docker:2375
     commands:
-       - docker tag devbuild adamant/amp
+       - docker tag amp-base-dev adamant/amp
        - docker login -u $DOCKER_USER -p $DOCKER_PASS
        - docker push adamant/amp
+       - docker rmi amp-base-dev adamant/amp
        - echo "CONGRATS! SUCCESSFULLY BUILT AMP BASE IMAGE!"
 
   downstream:
@@ -47,6 +43,7 @@ pipeline:
     fork: true
     repositories:
       - Adam-Ant/docker-minecraft-amp
+      - Adam-Ant/docker-ark-amp
     when:
       event:  [ push, tag, deployment ]
       status: [ success ]
