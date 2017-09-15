@@ -44,6 +44,7 @@ pipeline:
     repositories:
       - Adam-Ant/docker-minecraft-amp
       - Adam-Ant/docker-ark-amp
+      - Adam-Ant/docker-starbound-amp
     when:
       event:  [ push, tag, deployment ]
       status: [ success ]
