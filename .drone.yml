@@ -4,7 +4,7 @@ pipeline:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-       - docker build --pull --no-cache -t amp-base-dev . 
+      - docker build --pull --no-cache -t amp-base-dev .
 
   test:
     image: docker
