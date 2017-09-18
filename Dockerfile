@@ -60,7 +60,6 @@ RUN curl -fL https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VER}.tar.xz \
     export CFLAGS="-march=i686 -O2 -pipe -fstack-protector-strong" && \
     export CXXFLAGS="-march=i686 -O2 -pipe -fstack-protector-strong" && \
     \
-    exec >/dev/null && \
     ../configure \
         --host=i686-pc-linux-gnu \
         --prefix=${PREFIX} \
