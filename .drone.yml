@@ -13,7 +13,7 @@ pipeline:
     secrets: [ LICENCE ]
     commands:
       - apk add --no-cache curl
-      - CON_NAME=$(docker run -dt --rm -p 8080:8080 -e "EXTRAS=+MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE amp-base-dev)
+      - CON_NAME=$(docker run -dt --rm -e "EXTRAS=+MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE amp-base-dev)
       # Wait for AMP to install and start!
       - timeout -t 90 docker logs -f $$CON_NAME &
       - sleep 30
