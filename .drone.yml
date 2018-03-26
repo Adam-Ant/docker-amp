@@ -1,19 +1,17 @@
 pipeline:
+
   build:
-    image: docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    commands:
-      - docker build --pull --no-cache -t amp-base-dev .
+    image: spritsail/docker-build
+    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
+    repo: amp-dev
 
   test:
     image: docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     secrets: [ LICENCE ]
     commands:
       - apk add --no-cache curl
-      - CON_NAME=$(docker run -dt --rm -e "EXTRAS=+MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE amp-base-dev)
+      - CON_NAME=$(docker run -dt --rm -e "EXTRAS=+MinecraftModule.Java.MaxHeapSizeMB 256" -e "MODULE=Minecraft" -e LICENCE amp-dev)
       # Wait for AMP to install and start!
       - timeout -t 90 docker logs -f $$CON_NAME &
       - sleep 30
@@ -24,28 +22,30 @@ pipeline:
       - wait $(pidof timeout) || true
 
   publish:
-    image: docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    secrets: [ DOCKER_USER, DOCKER_PASS ]
-    when:
-      event: [push, tag, deployment]
-    commands:
-       - docker tag amp-base-dev adamant/amp
-       - docker login -u $DOCKER_USER -p $DOCKER_PASS
-       - docker push adamant/amp
-       - docker rmi amp-base-dev adamant/amp
-       - echo "CONGRATS! SUCCESSFULLY BUILT AMP BASE IMAGE!"
+      image: spritsail/docker-publish
+      when: { branch: [ master ], event: [ push, tag, deployment ] }
+      volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
+      secrets: [ docker_username, docker_password, microbadger_token ]
+      from: amp-dev
+      repo: spritsail/amp
 
   downstream:
     image: plugins/downstream
-    secrets: [ DOWNSTREAM_TOKEN ]
-    server: https://drone.adam-ant.co.uk
-    fork: true
-    repositories:
-      - Adam-Ant/docker-minecraft-amp
-      - Adam-Ant/docker-ark-amp
-      - Adam-Ant/docker-starbound-amp
+    secrets: [ downstream_token ]
     when:
       event:  [ push, tag, deployment ]
       status: [ success ]
+    server: https://drone.spritsail.io
+    fork: true
+    repositories:
+      - spritsail/amp-minecraft
+      #- spritsail/amp-ark
+      #- spritsail/amp-starbound
+
+  notify:
+    image: appleboy/drone-telegram
+    when: { status: [ success, failure ] }
+    secrets: [ telegram_token, telegram_to ]
+    message: |
+      *{{repo.owner}}/{{repo.name}} [{{commit.branch}}]*: Build #{{build.number}}: *{{uppercase build.status}}*
+      {{build.link}}

@@ -1,10 +1,16 @@
-FROM frebib/debian-builder as builder
-
 ARG SOCAT_VER=1.7.3.2
 ARG SCREEN_VER=v.4.6.2
 ARG LIBEVENT_VER=2.1.8-stable
-ARG TMUX_VER=2.5
-ARG GLIBC_VER=2.26
+ARG TMUX_VER=2.6
+ARG GLIBC_VER=2.27
+
+FROM spritsail/debian-builder as builder
+
+ARG SOCAT_VER
+ARG SCREEN_VER
+ARG LIBEVENT_VER
+ARG TMUX_VER
+ARG GLIBC_VER
 
 ARG PREFIX=/usr
 
@@ -47,6 +53,8 @@ WORKDIR /tmp/glibc/build
 
 ARG CC="gcc -m32 -mstackrealign"
 ARG CXX="g++ -m32 -mstackrealign"
+
+RUN apt-get install -y bison
 
 # Download and build glibc from source
 RUN curl -fL https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VER}.tar.xz \
@@ -93,7 +101,25 @@ RUN cp -d /usr/lib32/libgcc_s.so.1 /output${PREFIX}/lib32 \
 #================
 
 
-FROM adamant/busybox:libressl
+FROM spritsail/busybox:libressl
+
+ARG SOCAT_VER
+ARG SCREEN_VER
+ARG LIBEVENT_VER
+ARG TMUX_VER
+ARG GLIBC_VER
+
+LABEL maintainer="Spritsail <amp@spritsail.io>" \
+      org.label-schema.vendor="Spritsail" \
+      org.label-schema.name="AMP" \
+      org.label-schema.url="https://cubecoders.com/AMP" \
+      org.label-schema.description="A game server web management tool" \
+      org.label-schema.version="latest" \
+      io.spritsail.version.socat=${SOCAT_VER} \
+      io.spritsail.version.screen=${SCREEN_VER} \
+      io.spritsail.version.libevent=${LIBEVENT_VER} \
+      io.spritsail.version.tmux=${TMUX_VER} \
+      io.spritsail.version.lib32-glibc=${GLIBC_VER}
 
 COPY --from=builder /output/ /
 
