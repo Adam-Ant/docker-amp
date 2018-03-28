@@ -35,6 +35,7 @@ pipeline:
     when:
       event:  [ push, tag, deployment ]
       status: [ success ]
+      branch: [ master ]
     server: https://drone.spritsail.io
     fork: true
     repositories:
