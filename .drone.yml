@@ -37,6 +37,7 @@ pipeline:
       status: [ success ]
       branch: [ master ]
     server: https://drone.spritsail.io
+    wait: true
     fork: true
     repositories:
       - spritsail/amp-steamcmd
