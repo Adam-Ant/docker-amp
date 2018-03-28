@@ -3,6 +3,9 @@ ARG SCREEN_VER=v.4.6.2
 ARG LIBEVENT_VER=2.1.8-stable
 ARG TMUX_VER=2.6
 
+ARG PREFIX=/usr
+ARG OUTDIR=/output
+
 FROM spritsail/debian-builder as builder
 
 ARG SOCAT_VER
@@ -10,24 +13,25 @@ ARG SCREEN_VER
 ARG LIBEVENT_VER
 ARG TMUX_VER
 
-ARG PREFIX=/usr
+ARG PREFIX
+ARG OUTDIR
 
 RUN apt-get update \
  && apt-get install -qqy dh-autoreconf libncurses5-dev libsqlite3-0 libgcc1 \
- && mkdir -p /output/${PREFIX}/{bin,lib}
+ && mkdir -p ${OUTDIR}${PREFIX}/{bin,lib}
 
 RUN curl -fL http://www.dest-unreach.org/socat/download/socat-${SOCAT_VER}.tar.gz | tar xz \
  && cd socat-${SOCAT_VER} \
  && ./configure --prefix=${PREFIX} \
  && make -j "$(nproc)" \
- && mv ./socat /output/${PREFIX}/bin
+ && mv ./socat ${OUTDIR}${PREFIX}/bin
 
 RUN curl -fL http://git.savannah.gnu.org/cgit/screen.git/snapshot/screen-${SCREEN_VER}.tar.gz | tar xz \
  && cd screen-${SCREEN_VER}/src/ \
  && ./autogen.sh \
  && ./configure --prefix=${PREFIX} \
  && make -j "$(nproc)" \
- && mv ./screen /output/${PREFIX}/bin
+ && mv ./screen ${OUTDIR}${PREFIX}/bin
 
 RUN curl -fL https://github.com/libevent/libevent/releases/download/release-${LIBEVENT_VER}/libevent-${LIBEVENT_VER}.tar.gz | tar xz \
  && cd libevent-${LIBEVENT_VER} \
@@ -35,19 +39,19 @@ RUN curl -fL https://github.com/libevent/libevent/releases/download/release-${LI
  && ./configure --prefix=${PREFIX} \
  && make -j "$(nproc)" \
  && make DESTDIR="$(pwd)/build" install \
- && cp -d ./build/${PREFIX}/lib/*.so* /output${PREFIX}/lib
+ && cp -d ./build/${PREFIX}/lib/*.so* ${OUTDIR}${PREFIX}/lib
 
 RUN curl -fL https://github.com/tmux/tmux/releases/download/${TMUX_VER}/tmux-${TMUX_VER}.tar.gz | tar xz \
  && cd tmux-${TMUX_VER}/ \
  && export LE_DIR="../libevent-${LIBEVENT_VER}/build/usr" \
  && ./configure CFLAGS="-I$LE_DIR/include" LDFLAGS="-L$LE_DIR/lib" --prefix=${PREFIX} \
  && make -j "$(nproc)" \
- && mv ./tmux /output/${PREFIX}/bin
+ && mv ./tmux ${OUTDIR}${PREFIX}/bin
 
 # Yeah we should probably build these from source, but its part of the debian image.....
-RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 /output/${PREFIX}/lib \
- && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 /output/${PREFIX}/lib \
- && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 /output/${PREFIX}/lib
+RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
+ && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 ${OUTDIR}${PREFIX}/lib \
+ && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 ${OUTDIR}${PREFIX}/lib
 
 
 #================
@@ -59,9 +63,9 @@ ARG SOCAT_VER
 ARG SCREEN_VER
 ARG LIBEVENT_VER
 ARG TMUX_VER
+ARG OUTDIR
 
 LABEL maintainer="Spritsail <amp@spritsail.io>" \
-      org.label-schema.vendor="Spritsail" \
       org.label-schema.name="AMP" \
       org.label-schema.url="https://cubecoders.com/AMP" \
       org.label-schema.description="A game server web management tool" \
@@ -71,7 +75,7 @@ LABEL maintainer="Spritsail <amp@spritsail.io>" \
       io.spritsail.version.libevent=${LIBEVENT_VER} \
       io.spritsail.version.tmux=${TMUX_VER}
 
-COPY --from=builder /output/ /
+COPY --from=builder ${OUTDIR}/ /
 
 RUN addgroup -S amp \
  && adduser -SDG amp amp \
