@@ -39,9 +39,8 @@ pipeline:
     server: https://drone.spritsail.io
     fork: true
     repositories:
+      - spritsail/amp-steamcmd
       - spritsail/amp-minecraft
-      #- spritsail/amp-ark
-      #- spritsail/amp-starbound
 
   notify:
     image: appleboy/drone-telegram
