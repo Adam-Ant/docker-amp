@@ -90,8 +90,7 @@ WORKDIR /opt/amp
 
 RUN wget -q https://cubecoders.com/Downloads/ampinstmgr.zip \
  && unzip ampinstmgr.zip \
- && rm -rf ampinstmgr.zip \
- && ln -sfv /opt/amp/ampinstmgr /usr/bin
+ && rm -rf ampinstmgr.zip
 
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
