@@ -53,11 +53,9 @@ RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 ${OUTDIR}${PREFIX}/lib
 
+# ~~~~~~~~~~~~~~~~~~~~~~~
 
-#================
-
-
-FROM spritsail/busybox:libressl
+FROM spritsail/libressl
 
 ARG SOCAT_VER
 ARG SCREEN_VER
