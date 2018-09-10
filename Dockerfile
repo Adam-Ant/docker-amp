@@ -1,5 +1,4 @@
 ARG SOCAT_VER=1.7.3.2
-ARG SCREEN_VER=v.4.6.2
 ARG LIBEVENT_VER=2.1.8-stable
 ARG TMUX_VER=2.6
 
@@ -9,7 +8,6 @@ ARG OUTDIR=/output
 FROM spritsail/debian-builder as builder
 
 ARG SOCAT_VER
-ARG SCREEN_VER
 ARG LIBEVENT_VER
 ARG TMUX_VER
 
@@ -26,13 +24,6 @@ RUN curl -fL http://www.dest-unreach.org/socat/download/socat-${SOCAT_VER}.tar.g
  && make -j "$(nproc)" \
  && mv ./socat ${OUTDIR}${PREFIX}/bin
 
-RUN curl -fL http://git.savannah.gnu.org/cgit/screen.git/snapshot/screen-${SCREEN_VER}.tar.gz | tar xz \
- && cd screen-${SCREEN_VER}/src/ \
- && ./autogen.sh \
- && ./configure --prefix=${PREFIX} \
- && make -j "$(nproc)" \
- && mv ./screen ${OUTDIR}${PREFIX}/bin
-
 RUN curl -fL https://github.com/libevent/libevent/releases/download/release-${LIBEVENT_VER}/libevent-${LIBEVENT_VER}.tar.gz | tar xz \
  && cd libevent-${LIBEVENT_VER} \
  && mkdir build/ \
@@ -48,7 +39,7 @@ RUN curl -fL https://github.com/tmux/tmux/releases/download/${TMUX_VER}/tmux-${T
  && make -j "$(nproc)" \
  && mv ./tmux ${OUTDIR}${PREFIX}/bin
 
-# Yeah we should probably build these from source, but its part of the debian image.....
+# Yeah we should probably build this from source, but that requires building all of gcc
 RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 ${OUTDIR}${PREFIX}/lib
@@ -58,7 +49,6 @@ RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
 FROM spritsail/libressl
 
 ARG SOCAT_VER
-ARG SCREEN_VER
 ARG LIBEVENT_VER
 ARG TMUX_VER
 ARG OUTDIR
@@ -69,7 +59,6 @@ LABEL maintainer="Spritsail <amp@spritsail.io>" \
       org.label-schema.description="A game server web management tool" \
       org.label-schema.version="latest" \
       io.spritsail.version.socat=${SOCAT_VER} \
-      io.spritsail.version.screen=${SCREEN_VER} \
       io.spritsail.version.libevent=${LIBEVENT_VER} \
       io.spritsail.version.tmux=${TMUX_VER}
 
