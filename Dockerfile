@@ -76,8 +76,8 @@ LABEL maintainer="Spritsail <amp@spritsail.io>" \
 
 COPY --from=builder ${OUTDIR}/ /
 
-RUN addgroup -S amp \
- && adduser -SDG amp amp \
+RUN addgroup -g 500 -S amp \
+ && adduser -u 500 -SDG amp amp \
  && mkdir -p /home/amp/.ampdata/instances /ampdata \
  && ln -s /ampdata /home/amp/.ampdata/instances/instance \
  && chown -R amp:amp /ampdata /home/amp \
