@@ -17,7 +17,7 @@ ARG PREFIX
 ARG OUTDIR
 
 RUN apt-get update \
- && apt-get install -qqy dh-autoreconf libncurses5-dev libsqlite3-0 libgcc1 \
+ && apt-get install -qqy dh-autoreconf libncurses5-dev libsqlite3-0 libgcc1 locales \
  && mkdir -p ${OUTDIR}{${PREFIX}/{bin,lib},/opt/amp}
 
 RUN curl -fL http://www.dest-unreach.org/socat/download/socat-${SOCAT_VER}.tar.gz | tar xz \
@@ -41,7 +41,15 @@ RUN curl -fL https://github.com/tmux/tmux/releases/download/${TMUX_VER}/tmux-${T
  && make -j "$(nproc)" \
  && mv ./tmux ${OUTDIR}${PREFIX}/bin
 
-# Yeah we should probably build this from source, but that requires building all of gcc
+# Grab the assorted system libs we need for tmux
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+ && locale-gen \
+ && mkdir -p ${OUTDIR}${PREFIX}/lib/{locale,terminfo} ${OUTDIR}/etc/ \
+ && cp -d /usr/lib/locale/locale-archive ${OUTDIR}${PREFIX}/lib/locale/locale-archive \
+ && cp -rd /lib/terminfo/ ${OUTDIR}${PREFIX}/lib \
+ && echo 'set-option -g default-shell "/bin/sh"' >> ${OUTDIR}/etc/tmux.conf
+
+# Yeah we should probably build these from source, but its part of the debian image.....
 RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 ${OUTDIR}${PREFIX}/lib
