@@ -22,7 +22,7 @@ ARG AMPDIR
 
 RUN apt-get update \
  && apt-get install -qqy dh-autoreconf libsqlite3-0 libgcc1 locales \
- && mkdir -p ${OUTDIR}{${PREFIX}/{bin,lib},${AMPDIR}}
+ && mkdir -p ${OUTDIR}{${PREFIX}/{bin,lib,share},${AMPDIR}}
 
 RUN curl -fL http://www.dest-unreach.org/socat/download/socat-${SOCAT_VER}.tar.gz | tar xz \
  && cd socat-${SOCAT_VER} \
@@ -70,17 +70,14 @@ RUN curl -fL https://github.com/tmux/tmux/releases/download/${TMUX_VER}/tmux-${T
  && make -j "$(nproc)" \
  && mv ./tmux ${OUTDIR}${PREFIX}/bin
 
-# Grab the assorted system libs we need for tmux
-RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
- && locale-gen \
- && mkdir -p ${OUTDIR}${PREFIX}/{lib/locale,share} ${OUTDIR}/etc/ \
- && cp -d /usr/lib/locale/locale-archive ${OUTDIR}${PREFIX}/lib/locale/locale-archive \
- && echo 'set-option -g default-shell "/bin/sh"' >> ${OUTDIR}/etc/tmux.conf
-
 # Yeah we should probably build these from source, but its part of the debian image.....
 RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
  && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0 ${OUTDIR}${PREFIX}/lib \
- && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 ${OUTDIR}${PREFIX}/lib
+ && cp -d /usr/lib/$(gcc -print-multiarch)/libsqlite3.so.0.8.6 ${OUTDIR}${PREFIX}/lib \
+    # Generate a default UTF-8 locale
+    # Source: https://github.com/jaymoulin/docker-plex/blob/65713c772d792fcbb9c486122183c1e0f66da077/Dockerfile.amd#L22-L23
+ && mkdir -p ${OUTDIR}/usr/lib/locale \
+ && localedef --force --prefix=${OUTDIR} --inputfile POSIX --charmap UTF-8 C.UTF-8 || true
 
 ADD start.sh ${OUTDIR}/start.sh
 
@@ -130,7 +127,7 @@ RUN addgroup -g 500 -S amp \
 
 # Defaults for tmux/ncurses
 ENV TERM=xterm \
-    LANG=en_US.UTF-8 \
+    LANG=C.UTF-8 \
     PATH=${PATH}:${AMPDIR} \
     MONO_TLS_PROVIDER=btls \
     \
