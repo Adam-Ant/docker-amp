@@ -11,6 +11,9 @@ if [ "$PASSWORD" == "changeme" ]; then
     >&2 printf "[Info] The PASSWORD for the admin user is '%s'\n\n" "$PASSWORD"
 fi
 
+# Always attempt to sync certificates
+ampinstmgr -sync-certs
+
 if [ ! -f "AMP_Linux_x86_64" ]; then
     >&2 echo "[Info] Creating $MODULE instance."
     ampinstmgr CreateInstance "$MODULE" instance \
