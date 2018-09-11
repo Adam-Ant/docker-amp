@@ -6,6 +6,7 @@ ARG AMP_VER=1.6.10.2
 
 ARG PREFIX=/usr
 ARG OUTDIR=/output
+ARG AMPDIR=/opt/amp
 
 FROM spritsail/debian-builder as builder
 
@@ -17,10 +18,11 @@ ARG AMP_VER
 
 ARG PREFIX
 ARG OUTDIR
+ARG AMPDIR
 
 RUN apt-get update \
  && apt-get install -qqy dh-autoreconf libsqlite3-0 libgcc1 locales \
- && mkdir -p ${OUTDIR}{${PREFIX}/{bin,lib},/opt/amp}
+ && mkdir -p ${OUTDIR}{${PREFIX}/{bin,lib},${AMPDIR}}
 
 RUN curl -fL http://www.dest-unreach.org/socat/download/socat-${SOCAT_VER}.tar.gz | tar xz \
  && cd socat-${SOCAT_VER} \
@@ -85,9 +87,11 @@ ADD start.sh ${OUTDIR}/start.sh
 WORKDIR /tmp/amp
 RUN curl -fsS https://repo.cubecoders.com/ampinstmgr-${AMP_VER}.$(uname -m).deb \
         | dpkg-deb -x - . \
-    && mv opt/cubecoders/amp ${OUTDIR}/opt \
-    && strip -s ${OUTDIR}/opt/amp/ampinstmgr ${OUTDIR}/opt/amp/btls.so \
-    && chmod +x ${OUTDIR}/start.sh
+ && mv opt/cubecoders/amp/* ${OUTDIR}${AMPDIR} \
+    # Temp fix for btls linking paths
+ && ln -sfv ${AMPDIR}/btls.so /usr/lib \
+ && chmod +x ${OUTDIR}/start.sh \
+ && find ${OUTDIR} -exec sh -c 'file "{}" | grep -q ELF && strip --strip-all "{}"' \;
 
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -99,6 +103,7 @@ ARG NCURSES_VER
 ARG TMUX_VER
 ARG AMP_VER
 ARG OUTDIR
+ARG AMPDIR
 
 LABEL maintainer="Spritsail <amp@spritsail.io>" \
       org.label-schema.name="AMP" \
@@ -124,11 +129,12 @@ RUN addgroup -g 500 -S amp \
 # Defaults for tmux/ncurses
 ENV TERM=xterm \
     LANG=en_US.UTF-8 \
-    PATH=$PATH:/opt/amp
+    PATH=${PATH}:${AMPDIR} \
+    MONO_TLS_PROVIDER=btls
 
-USER amp
+USER    amp
 VOLUME  /ampdata
-WORKDIR /opt/amp
+WORKDIR ${AMPDIR}
 
 ENTRYPOINT ["/sbin/tini","--"]
 CMD ["/start.sh"]
