@@ -89,7 +89,9 @@ RUN curl -fsS https://repo.cubecoders.com/ampinstmgr-${AMP_VER}.$(uname -m).deb 
         | dpkg-deb -x - . \
  && mv opt/cubecoders/amp/* ${OUTDIR}${AMPDIR} \
     # Temp fix for btls linking paths
- && ln -sfv ${AMPDIR}/btls.so /usr/lib \
+ && ln -sfv ${AMPDIR}/btls.so ${PREFIX}/lib \
+    # Temp fix until nightly is stable
+ && touch ${OUTDIR}${PREFIX}/bin/screen \
  && chmod +x ${OUTDIR}/start.sh \
  && find ${OUTDIR} -exec sh -c 'file "{}" | grep -q ELF && strip --strip-all "{}"' \;
 
