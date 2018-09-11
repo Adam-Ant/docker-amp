@@ -130,7 +130,12 @@ RUN addgroup -g 500 -S amp \
 ENV TERM=xterm \
     LANG=en_US.UTF-8 \
     PATH=${PATH}:${AMPDIR} \
-    MONO_TLS_PROVIDER=btls
+    MONO_TLS_PROVIDER=btls \
+    \
+    HOST=0.0.0.0 \
+    PORT=8080 \
+    USERNAME=admin \
+    PASSWORD=changeme
 
 USER    amp
 VOLUME  /ampdata
