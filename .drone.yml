@@ -23,11 +23,11 @@ pipeline:
 
   publish:
     image: spritsail/docker-publish
-    when: { branch: [ master ], event: [ push, tag, deployment ] }
+    when: { branch: [ 1.7 ], event: [ push, tag, deployment ] }
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     secrets: [ docker_username, docker_password, microbadger_token ]
     from: amp-dev
-    repo: spritsail/amp
+    repo: spritsail/amp:1.7
 
   notify:
     image: spritsail/notify

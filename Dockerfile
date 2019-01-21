@@ -79,18 +79,19 @@ RUN cp -d /lib/$(gcc -print-multiarch)/libgcc_s.so.1 ${OUTDIR}${PREFIX}/lib \
  && mkdir -p ${OUTDIR}/usr/lib/locale \
  && localedef --force --prefix=${OUTDIR} --inputfile POSIX --charmap UTF-8 C.UTF-8 || true
 
+# Strip all ELF files *before* adding AMP
+# AMP does not tolerate being stripped as of the 1.7.x builds
+RUN find ${OUTDIR} -exec sh -c 'file "{}" | grep -q ELF && strip --strip-all "{}"' \;
+
 ADD start.sh ${OUTDIR}/start.sh
 
 WORKDIR /tmp/amp
 RUN curl -fsS https://repo.cubecoders.com/ampinstmgr-${AMP_VER}.$(uname -m).deb \
         | dpkg-deb -x - . \
     # Temp fix for btls linking paths
- && mv opt/cubecoders/amp/btls.so ${OUTDIR}${PREFIX}/lib \
+ && rm opt/cubecoders/amp/btls.so \
  && mv opt/cubecoders/amp/* ${OUTDIR}${AMPDIR} \
-    # Temp fix until nightly is stable
- && touch ${OUTDIR}${PREFIX}/bin/screen \
- && chmod +x ${OUTDIR}/start.sh \
- && find ${OUTDIR} -exec sh -c 'file "{}" | grep -q ELF && strip --strip-all "{}"' \;
+ && chmod +x ${OUTDIR}/start.sh
 
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
