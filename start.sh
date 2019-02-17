@@ -17,9 +17,8 @@ if [ ! -f "AMP_Linux_x86_64" ]; then
     fi
 
     >&2 echo "[Info] Creating $MODULE instance."
-    ampinstmgr CreateInstance "$MODULE" instance \
-        "$HOST" "$PORT" "$LICENCE" "$PASSWORD" \
-        +Core.Login.Username "$USERNAME" \
+    ampinstmgr --CreateInstance "$MODULE" instance \
+        "$HOST" "$PORT" "$LICENCE" "$USERNAME" "$PASSWORD" \
         $EXTRAS
 else
     ./AMP_Linux_x86_64 +Core.AMP.LicenceKey "$LICENCE"
