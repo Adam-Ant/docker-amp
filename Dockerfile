@@ -88,8 +88,6 @@ ADD start.sh ${OUTDIR}/start.sh
 WORKDIR /tmp/amp
 RUN curl -fsS https://repo.cubecoders.com/ampinstmgr-${AMP_VER}.$(uname -m).deb \
         | dpkg-deb -x - . \
-    # Temp fix for btls linking paths
- && rm opt/cubecoders/amp/btls.so \
  && mv opt/cubecoders/amp/* ${OUTDIR}${AMPDIR} \
  && chmod +x ${OUTDIR}/start.sh
 
